@@ -11,18 +11,17 @@
       set_fact:
         nextdns_conf_content: "{{ nextdns_conf_raw.content | b64decode | split('\n') }}"
 
-    - name: Extract MAC addresses with assigned profiles
+    - name: Extract MAC addresses, profiles, and optional device names
       set_fact:
-        mac_profiles: "{{ nextdns_conf_content | select('search', '^profile\\s+[0-9A-Fa-f:]+=\\w+') 
-                         | map('regex_replace', '^profile\\s+([0-9A-Fa-f:]+)=(\\w+)', '{\"mac\": \"\\1\", \"profile\": \"\\2\"}')
+        mac_profiles: "{{ nextdns_conf_content | select('search', '^profile\\s+[0-9A-Fa-f:]+=\\w+')
+                         | map('regex_replace', '^profile\\s+([0-9A-Fa-f:]+)=(\\w+)(?:\\s+#(.+))?', '{\"mac\": \"\\1\", \"profile\": \"\\2\", \"device_name\": \"\\3\"}')
                          | map('from_json')
                          | list }}"
 
-    - name: Display MAC address and profile mappings
+    - name: Display MAC address, profile, and device name mappings
       ansible.builtin.debug:
         msg: |
-          MAC and profile pairs:
+          MAC, profile, and device name pairs:
           {% for item in mac_profiles %}
-          'mac': '{{ item.mac }}', 'profile': '{{ item.profile }}'
+          'mac': '{{ item.mac }}', 'profile': '{{ item.profile }}'{% if item.device_name %}, 'device_name': '{{ item.device_name }}'{% endif %}
           {% endfor %}
-
