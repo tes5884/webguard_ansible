@@ -4,6 +4,7 @@
   vars:
     mac_address: "{{ mac_address }}"  # Replace with the desired MAC address or pass as an extra var
     profile_id: "{{ profile_id }}"      # The profile to assign to the MAC address
+    device_name: "{{ device_name }}" # Familiar name to identify the device
 
   tasks:
     - name: Check if MAC address profile exists in nextdns.conf
@@ -21,7 +22,7 @@
       ansible.builtin.lineinfile:
         path: /usr/local/etc/nextdns.conf
         regexp: '^profile {{ mac_address }}='
-        line: "profile {{ mac_address }}={{ profile_id }}"
+        line: "profile {{ mac_address }}={{ profile_id }} #{{ device_name }}"
         state: present
         create: yes
       register: profile_update
@@ -31,7 +32,7 @@
       ansible.builtin.set_fact:
         profile_status: >-
           Profile for MAC address {{ mac_address }} was {{ 'added' if profile_update.changed else 'updated' }} 
-          with profile ID {{ profile_id }}.
+          with profile ID {{ profile_id }} and device name {{ device_name }}.
       when: profile_check.rc != 0
 
     - name: Restart NextDNS to apply changes if profile was added or updated
