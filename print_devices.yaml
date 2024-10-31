@@ -15,22 +15,34 @@
       set_fact:
         profile_lines: "{{ nextdns_conf_content | select('search', '^profile\\s+') | list }}"
 
-    - name: Debug all profile lines for inspection
-      ansible.builtin.debug:
-        var: profile_lines
+    - name: Extract profile lines with only profile ID
+      set_fact:
+        simple_profiles: "{{ profile_lines 
+                            | select('search', '^profile\\s+\\w+$')
+                            | map('regex_replace', '^profile\\s+(\\w+)', '{\"profile\": \"\\1\"}')
+                            | map('from_json')
+                            | list }}"
 
-    - name: Extract MAC addresses, profiles, and optional device names
+    - name: Extract MAC address, profile ID, and optional device name
       set_fact:
         mac_profiles: "{{ profile_lines 
+                         | select('search', '^profile\\s+[0-9A-Fa-f:]+=\\w+')
                          | map('regex_replace', '^profile\\s+([0-9A-Fa-f:]+)=(\\w+)(?:\\s+#(.*))?', '{\"mac\": \"\\1\", \"profile\": \"\\2\", \"device_name\": \"\\3\"}')
-                         | select('search', '^\\{.*\\}$')  # Ensure only valid JSON is selected
                          | map('from_json')
                          | list }}"
 
-    - name: Display MAC address, profile, and device name mappings
+    - name: Merge simple and MAC profiles
+      set_fact:
+        all_profiles: "{{ simple_profiles + mac_profiles }}"
+
+    - name: Display all profiles
       ansible.builtin.debug:
         msg: |
-          MAC, profile, and device name pairs:
-          {% for item in mac_profiles %}
+          All profile mappings:
+          {% for item in all_profiles %}
+          {% if item.mac %}
           'mac': '{{ item.mac }}', 'profile': '{{ item.profile }}'{% if item.device_name %}, 'device_name': '{{ item.device_name }}'{% endif %}
+          {% else %}
+          'profile': '{{ item.profile }}' (no MAC address)
+          {% endif %}
           {% endfor %}
