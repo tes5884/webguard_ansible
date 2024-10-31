@@ -15,12 +15,12 @@
       set_fact:
         nextdns_conf_content: "{{ nextdns_conf_raw.content | b64decode | split('\n') }}"
 
-    - name: Extract MAC addresses with assigned profiles, excluding defaults
+    - name: Extract profiles with MAC addresses, excluding defaults
       set_fact:
         mac_profiles: "{{ nextdns_conf_content | select('match', '^profile\\s+([0-9A-Fa-f:]+)=(\\w+)') 
                          | map('regex_search', '^profile\\s+([0-9A-Fa-f:]+)=(\\w+)')
-                         | selectattr(1, 'not in', default_profiles)
-                         | map('regex_replace', '^profile\\s+([0-9A-Fa-f:]+)=(\\w+)', '\\1: \\2')
+                         | map('extract', ['mac_address', 'profile_id'])
+                         | selectattr('1', '!=', default_profiles)
                          | list }}"
 
     - name: Display MAC address and profile mappings
