@@ -1,0 +1,45 @@
+- name: Update nextdns.conf with MAC address profile
+  hosts: "{{ target_hosts }}"
+  become: yes
+  vars:
+    mac_address: "{{ mac_address }}"  # Replace with the desired MAC address or pass as an extra var
+    profile_id: "{{ profile_id }}"      # The profile to assign to the MAC address
+
+  tasks:
+    - name: Check if MAC address profile exists in nextdns.conf
+      ansible.builtin.command: "grep '^profile {{ mac_address }}={{ profile_id }}' /usr/local/etc/nextdns.conf"
+      register: profile_check
+      failed_when: profile_check.rc > 1  # Only fail if rc > 1 (indicates an actual error)
+      changed_when: no  # Prevents this check from marking the task as changed
+
+    - name: Set fact if profile already exists
+      ansible.builtin.set_fact:
+        profile_status: "Profile for MAC address {{ mac_address }} already exists with profile ID {{ profile_id }}."
+      when: profile_check.rc == 0
+
+    - name: Update or add the MAC address profile in nextdns.conf
+      ansible.builtin.lineinfile:
+        path: /usr/local/etc/nextdns.conf
+        regexp: '^profile {{ mac_address }}='
+        line: "profile {{ mac_address }}={{ profile_id }}"
+        state: present
+        create: yes
+      register: profile_update
+      when: profile_check.rc != 0
+
+    - name: Set fact if profile was added or updated
+      ansible.builtin.set_fact:
+        profile_status: >-
+          Profile for MAC address {{ mac_address }} was {{ 'added' if profile_update.changed else 'updated' }} 
+          with profile ID {{ profile_id }}.
+      when: profile_check.rc != 0
+
+    - name: Restart NextDNS to apply changes if profile was added or updated
+      ansible.builtin.service:
+        name: nextdns
+        state: restarted
+      when: profile_update.changed
+
+    - name: Summary of actions
+      ansible.builtin.debug:
+        msg: "{{ profile_status }}"
