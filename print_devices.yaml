@@ -1,6 +1,10 @@
 - name: Parse nextdns.conf for MAC address profile mappings
   hosts: "{{ target_hosts }}"
   become: yes
+  vars:
+    default_profiles:  # Add any default profiles here to ignore
+      - "779b94"
+      - "914bbc"
   tasks:
     - name: Read nextdns.conf file
       ansible.builtin.slurp:
@@ -11,14 +15,14 @@
       set_fact:
         nextdns_conf_content: "{{ nextdns_conf_raw.content | b64decode | split('\n') }}"
 
-    - name: Debug the content of nextdns.conf
-      ansible.builtin.debug:
-        msg: "{{ nextdns_conf_content }}"
-
-    - name: Extract profiles with or without MAC addresses
+    - name: Extract MAC addresses with assigned profiles, excluding defaults
       set_fact:
-        mac_profiles: "{{ nextdns_conf_content | select('match', '^profile\\s+([0-9A-Fa-f:]+)(?:=([\\w]+))?$') | map('regex_search', '^profile\\s+([0-9A-Fa-f:]+)(?:=([\\w]+))?') | list }}"
+        mac_profiles: "{{ nextdns_conf_content | select('match', '^profile\\s+([0-9A-Fa-f:]+)=(\\w+)') 
+                         | map('regex_search', '^profile\\s+([0-9A-Fa-f:]+)=(\\w+)')
+                         | selectattr(1, 'not in', default_profiles)
+                         | map('regex_replace', '^profile\\s+([0-9A-Fa-f:]+)=(\\w+)', '\\1: \\2')
+                         | list }}"
 
     - name: Display MAC address and profile mappings
       ansible.builtin.debug:
-        msg: "MAC and profile pairs: {{ mac_profiles }}"
+        msg: "Filtered MAC and profile pairs: {{ mac_profiles }}"
