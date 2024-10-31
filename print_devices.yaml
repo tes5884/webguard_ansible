@@ -13,10 +13,11 @@
 
     - name: Extract MAC addresses with assigned profiles
       set_fact:
-        mac_profiles: "{{ nextdns_conf_content | select('search', '^profile\\s+[0-9A-Fa-f:]+=\\w+') 
-                         | map('regex_replace', '^profile\\s+([0-9A-Fa-f:]+)=(\\w+)', '{\"mac\": \"\\1\", \"profile\": \"\\2\"}')
+        mac_profiles: "{{ nextdns_conf_content | select('search', '^profile\\s+[0-9A-Fa-f:]+=\\w+')
+                         | map('regex_replace', '^profile\\s+([0-9A-Fa-f:]+)=(\\w+)(?:\\s+#.*)?', '{\"mac\": \"\\1\", \"profile\": \"\\2\"}')
                          | map('from_json')
                          | list }}"
+
 
     - name: Display MAC address and profile mappings
       ansible.builtin.debug:
