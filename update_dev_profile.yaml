@@ -3,10 +3,34 @@
   become: yes
   vars:
     mac_address: "{{ mac_address }}"  # Replace with the desired MAC address or pass as an extra var
-    profile_id: "{{ profile_id }}"      # The profile to assign to the MAC address
-    device_name: "{{ device_name }}" # Familiar name to identify the device
+    profile_id: "{{ profile_id }}"     # The profile to assign to the MAC address
+    device_name: "{{ device_name }}"   # Familiar name to identify the device
 
   tasks:
+    - name: Validate mac_address format
+      ansible.builtin.assert:
+        that:
+          - mac_address is defined
+          - mac_address | regex_match('^([0-9A-Fa-f]{2}:){5}([0-9A-Fa-f]{2})$')
+        fail_msg: "mac_address '{{ mac_address }}' is invalid. It must be in the format xx:xx:xx:xx:xx:xx."
+        success_msg: "mac_address '{{ mac_address }}' is valid."
+
+    - name: Validate profile_id format
+      ansible.builtin.assert:
+        that:
+          - profile_id is defined
+          - profile_id | regex_match('^[A-Za-z0-9]+$')
+        fail_msg: "profile_id '{{ profile_id }}' is invalid. It must contain only letters and numbers, with no spaces or special characters."
+        success_msg: "profile_id '{{ profile_id }}' is valid."
+
+    - name: Validate device_name format
+      ansible.builtin.assert:
+        that:
+          - device_name is defined
+          - device_name | regex_match('^[A-Za-z0-9 ]+$')
+        fail_msg: "device_name '{{ device_name }}' is invalid. It must contain only letters, numbers, and spaces, with no special characters."
+        success_msg: "device_name '{{ device_name }}' is valid."
+
     - name: Check if MAC address profile exists in nextdns.conf
       ansible.builtin.command: "grep '^profile {{ mac_address }}={{ profile_id }}' /usr/local/etc/nextdns.conf"
       register: profile_check
