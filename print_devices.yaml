@@ -22,6 +22,7 @@
       ansible.builtin.debug:
         msg: |
           MAC and profile pairs:
-         {% for item in mac_profiles %}
-         'mac': '{{ item.mac }}', 'profile': '{{ item.profile }}'
-         {% endfor %}
+          {% for item in mac_profiles %}
+          'mac': '{{ item.mac }}', 'profile': '{{ item.profile }}'
+          {% endfor %}
+
