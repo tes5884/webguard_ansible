@@ -9,7 +9,7 @@
 
     - name: Decode and split nextdns.conf contents
       set_fact:
-        nextdns_conf_content: "{{ nextdns_conf_raw.content | b64decode | splitlines }}"
+        nextdns_conf_content: "{{ nextdns_conf_raw.content | b64decode | split('\n') }}"
 
     - name: Extract MAC addresses with profiles
       set_fact:
