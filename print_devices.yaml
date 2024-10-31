@@ -43,7 +43,8 @@
           {% if 'mac' in item %}
           'mac': '{{ item.mac }}', 'profile': '{{ item.profile }}'{% if 'device_name' in item %}, 'device_name': '{{ item.device_name }}'{% endif %}
           {% else %}
-          'profile': '{{ item.profile }}' (no MAC address)
+          'profile': '{{ item.profile }}' (Default Profile)
           {% endif %}
+          
           {% endfor %}
 
