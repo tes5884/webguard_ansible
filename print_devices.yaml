@@ -23,6 +23,7 @@
       set_fact:
         mac_profiles: "{{ profile_lines 
                          | map('regex_replace', '^profile\\s+([0-9A-Fa-f:]+)=(\\w+)(?:\\s+#(.*))?', '{\"mac\": \"\\1\", \"profile\": \"\\2\", \"device_name\": \"\\3\"}')
+                         | select('search', '^\\{.*\\}$')  # Ensure only valid JSON is selected
                          | map('from_json')
                          | list }}"
 
