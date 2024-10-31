@@ -40,9 +40,10 @@
         msg: |
           All profile mappings:
           {% for item in all_profiles %}
-          {% if item.mac %}
-          'mac': '{{ item.mac }}', 'profile': '{{ item.profile }}'{% if item.device_name %}, 'device_name': '{{ item.device_name }}'{% endif %}
+          {% if 'mac' in item %}
+          'mac': '{{ item.mac }}', 'profile': '{{ item.profile }}'{% if 'device_name' in item %}, 'device_name': '{{ item.device_name }}'{% endif %}
           {% else %}
           'profile': '{{ item.profile }}' (no MAC address)
           {% endif %}
           {% endfor %}
+
