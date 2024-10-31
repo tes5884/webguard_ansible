@@ -11,13 +11,13 @@
       set_fact:
         nextdns_conf_content: "{{ nextdns_conf_raw.content | b64decode | split('\n') }}"
 
-    - name: Extract profiles with optional MAC addresses
+    - name: Debug the content of nextdns.conf
+      ansible.builtin.debug:
+        msg: "{{ nextdns_conf_content }}"
+
+    - name: Extract profiles with or without MAC addresses
       set_fact:
-        mac_profiles: >-
-          {{ nextdns_conf_content | map('regex_search', '^profile\\s+([0-9A-Fa-f:]+)(?:=([\\w]+))?') 
-          | select('!=', None) 
-          | map('extract', ['mac_address', 'profile_id']) 
-          | list }}
+        mac_profiles: "{{ nextdns_conf_content | select('match', '^profile\\s+([0-9A-Fa-f:]+)(?:=([\\w]+))?$') | map('regex_search', '^profile\\s+([0-9A-Fa-f:]+)(?:=([\\w]+))?') | list }}"
 
     - name: Display MAC address and profile mappings
       ansible.builtin.debug:
