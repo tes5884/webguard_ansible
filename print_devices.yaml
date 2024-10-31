@@ -15,6 +15,14 @@
       set_fact:
         profile_lines: "{{ nextdns_conf_content | select('search', '^profile\\s+') | list }}"
 
+    - name: Extract MAC addresses, profiles, and optional device names
+      set_fact:
+        mac_profiles: "{{ profile_lines 
+                         | select('search', '^profile\\s+([0-9A-Fa-f:]+=\\w+)(?:\\s+#.*)?')
+                         | map('regex_replace', '^profile\\s+([0-9A-Fa-f:]+)=(\\w+)(?:\\s+#(.*))?', '{\"mac\": \"\\1\", \"profile\": \"\\2\", \"device_name\": \"\\3\"}')
+                         | map('from_json')
+                         | list }}"
+
     - name: Extract profile lines with only profile ID
       set_fact:
         simple_profiles: "{{ profile_lines 
@@ -22,15 +30,7 @@
                             | map('regex_replace', '^profile\\s+(\\w+)', '{\"profile\": \"\\1\"}')
                             | map('from_json')
                             | list }}"
-
-    - name: Extract MAC address, profile ID, and optional device name
-      set_fact:
-        mac_profiles: "{{ profile_lines 
-                         | select('search', '^profile\\s+[0-9A-Fa-f:]+=\\w+')
-                         | map('regex_replace', '^profile\\s+([0-9A-Fa-f:]+)=(\\w+)(?:\\s+#(.*))?', '{\"mac\": \"\\1\", \"profile\": \"\\2\", \"device_name\": \"\\3\"}')
-                         | map('from_json')
-                         | list }}"
-
+                            
     - name: Merge simple and MAC profiles
       set_fact:
         all_profiles: "{{ simple_profiles + mac_profiles }}"
