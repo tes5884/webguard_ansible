@@ -27,9 +27,14 @@
                          | map('from_json')
                          | list }}"
 
-    - name: Add device names to profiles
+    - name: Initialize mac_profiles_with_names
       set_fact:
-        mac_profiles_with_names: "{{ mac_profiles | map('combine', {'device_name': device_names[item.mac] | default('')}) | list }}"
+        mac_profiles_with_names: []
+
+    - name: Add device names to each profile
+      set_fact:
+        mac_profiles_with_names: "{{ mac_profiles_with_names + [{'mac': item.mac, 'profile': item.profile, 'device_name': device_names.get(item.mac, '')}] }}"
+      loop: "{{ mac_profiles }}"
 
     - name: Display all profiles with device names
       ansible.builtin.debug:
