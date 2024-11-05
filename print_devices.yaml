@@ -27,6 +27,14 @@
                          | map('from_json')
                          | list }}"
 
+    - name: Extract default profile
+      set_fact:
+        default_profile: "{{ nextdns_conf_content 
+                            | select('search', '^profile\\s+\\w+$') 
+                            | map('regex_replace', '^profile\\s+(\\w+)', '{\"mac\": \"default\", \"profile\": \"\\1\", \"device_name\": \"Default Profile\"}')
+                            | map('from_json')
+                            | first | default({'mac': 'default', 'profile': 'N/A', 'device_name': 'Default Profile'}) }}"
+
     - name: Initialize mac_profiles_with_names
       set_fact:
         mac_profiles_with_names: []
@@ -35,6 +43,10 @@
       set_fact:
         mac_profiles_with_names: "{{ mac_profiles_with_names + [{'mac': item.mac, 'profile': item.profile, 'device_name': device_names.get(item.mac, '')}] }}"
       loop: "{{ mac_profiles }}"
+
+    - name: Append default profile to mac_profiles_with_names
+      set_fact:
+        mac_profiles_with_names: "{{ mac_profiles_with_names + [default_profile] }}"
 
     - name: Display all profiles with device names in "name - mac - profile" format
       ansible.builtin.debug:
