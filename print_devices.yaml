@@ -15,36 +15,32 @@
       set_fact:
         profile_lines: "{{ nextdns_conf_content | select('search', '^profile\\s+') | list }}"
 
-    - name: Extract MAC addresses, profiles, and optional device names
+    - name: Filter all device comment lines
+      set_fact:
+        device_comment_lines: "{{ nextdns_conf_content | select('search', '^//device\\s+') | list }}"
+
+    - name: Extract device comments into a dictionary
+      set_fact:
+        device_names: "{{ device_comment_lines 
+                         | map('regex_replace', '^//device\\s+([0-9A-Fa-f:]+)\\s+(.*)', '{\"mac\": \"\\1\", \"device_name\": \"\\2\"}')
+                         | map('from_json')
+                         | list | items2dict(key_name='mac', value_name='device_name') }}"
+
+    - name: Extract MAC addresses and profiles
       set_fact:
         mac_profiles: "{{ profile_lines 
-                         | select('search', '^profile\\s+([0-9A-Fa-f:]+=\\w+)(?:\\s+#.*)?')
-                         | map('regex_replace', '^profile\\s+([0-9A-Fa-f:]+)=(\\w+)(?:\\s+#(.*))?', '{\"mac\": \"\\1\", \"profile\": \"\\2\", \"device_name\": \"\\3\"}')
+                         | map('regex_replace', '^profile\\s+([0-9A-Fa-f:]+)=(\\w+)', '{\"mac\": \"\\1\", \"profile\": \"\\2\"}')
                          | map('from_json')
                          | list }}"
 
-    - name: Extract profile lines with only profile ID
+    - name: Merge device names with profiles
       set_fact:
-        simple_profiles: "{{ profile_lines 
-                            | select('search', '^profile\\s+\\w+$')
-                            | map('regex_replace', '^profile\\s+(\\w+)', '{\"profile\": \"\\1\"}')
-                            | map('from_json')
-                            | list }}"
-                            
-    - name: Merge simple and MAC profiles
-      set_fact:
-        all_profiles: "{{ simple_profiles + mac_profiles }}"
+        mac_profiles_with_names: "{{ mac_profiles | map('combine', {'device_name': device_names[item.mac] | default('')}) | list }}"
 
-    - name: Display all profiles
+    - name: Display all profiles with device names
       ansible.builtin.debug:
         msg: |
           All profile mappings:
-          {% for item in all_profiles %}
-          {% if 'mac' in item %}
-          'mac': '{{ item.mac }}', 'profile': '{{ item.profile }}'{% if 'device_name' in item %}, 'device_name': '{{ item.device_name }}'{% endif %}
-          {% else %}
-          'profile': '{{ item.profile }}' (Default Profile)
-          {% endif %}
-          
+          {% for item in mac_profiles_with_names %}
+          'mac': '{{ item.mac }}', 'profile': '{{ item.profile }}'{% if item.device_name %}, 'device_name': '{{ item.device_name }}'{% endif %}
           {% endfor %}
-
