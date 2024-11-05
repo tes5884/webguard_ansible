@@ -36,10 +36,10 @@
         mac_profiles_with_names: "{{ mac_profiles_with_names + [{'mac': item.mac, 'profile': item.profile, 'device_name': device_names.get(item.mac, '')}] }}"
       loop: "{{ mac_profiles }}"
 
-    - name: Display all profiles with device names
+    - name: Display all profiles with device names in "name - mac - profile" format
       ansible.builtin.debug:
         msg: |
           All profile mappings:
           {% for item in mac_profiles_with_names %}
-          'mac': '{{ item.mac }}', 'profile': '{{ item.profile }}'{% if item.device_name %}, 'device_name': '{{ item.device_name }}'{% endif %}
+          {{ item.device_name }} - {{ item.mac }} - {{ item.profile }}
           {% endfor %}
