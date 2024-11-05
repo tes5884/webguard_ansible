@@ -11,27 +11,20 @@
       set_fact:
         nextdns_conf_content: "{{ nextdns_conf_raw.content | b64decode | split('\n') }}"
 
-    - name: Filter all profile lines
-      set_fact:
-        profile_lines: "{{ nextdns_conf_content | select('search', '^profile\\s+') | list }}"
-
-    - name: Filter all device comment lines
-      set_fact:
-        device_comment_lines: "{{ nextdns_conf_content | select('search', '^//device\\s+') | list }}"
-
     - name: Extract device comments into a dictionary
       set_fact:
-        device_names: "{{ device_comment_lines 
+        device_names: "{{ nextdns_conf_content 
+                         | select('search', '^//device\\s+') 
                          | map('regex_replace', '^//device\\s+([0-9A-Fa-f:]+)\\s+(.*)', '{\"mac\": \"\\1\", \"device_name\": \"\\2\"}')
                          | map('from_json')
                          | list | items2dict(key_name='mac', value_name='device_name') }}"
 
-    - name: Extract MAC addresses and profiles
+    - name: Extract MAC address and profile ID mappings
       set_fact:
-        mac_profiles: "{{ profile_lines 
+        mac_profiles: "{{ nextdns_conf_content 
+                         | select('search', '^profile\\s+([0-9A-Fa-f:]+)=') 
                          | map('regex_replace', '^profile\\s+([0-9A-Fa-f:]+)=(\\w+)', '{\"mac\": \"\\1\", \"profile\": \"\\2\"}')
-                         | map('from_json', errors='ignore')  # Skip any lines that don't match JSON format
-                         | select('defined')  # Filter out any undefined (invalid) JSON results
+                         | map('from_json')
                          | list }}"
 
     - name: Merge device names with profiles
