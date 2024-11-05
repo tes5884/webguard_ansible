@@ -41,12 +41,19 @@
       ansible.builtin.set_fact:
         profile_status: "Profile for MAC address {{ mac_address }} already exists with profile ID {{ profile_id }}."
       when: profile_check.rc == 0
-
+      
+    - name: Add device name comment above the profile assignment
+      ansible.builtin.lineinfile:
+        path: /usr/local/etc/nextdns.conf
+        regexp: '^//device {{ mac_address }}'
+        line: "//device {{ mac_address }} {{ device_name }}"
+        state: present
+        insertafter: "^profile {{ mac_address }}="
     - name: Update or add the MAC address profile in nextdns.conf
       ansible.builtin.lineinfile:
         path: /usr/local/etc/nextdns.conf
         regexp: '^profile {{ mac_address }}='
-        line: "profile {{ mac_address }}={{ profile_id }} #{{ device_name }}"
+        line: "profile {{ mac_address }}={{ profile_id }}"
         state: present
         create: yes
       register: profile_update
