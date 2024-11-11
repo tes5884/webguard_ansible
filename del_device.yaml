@@ -13,3 +13,9 @@
         state: absent
         regexp: "{{ mac_address }}"
       when: mac_address is defined
+      
+    - name: Restart NextDNS to apply changes if profile was added or updated
+      ansible.builtin.service:
+        name: nextdns
+        state: restarted
+      when: profile_update.changed
