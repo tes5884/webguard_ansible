@@ -1,6 +1,6 @@
 ---
 - name: Delete MAC address from OPNsense configuration
-  hosts: "{{ target_hosts }}"
+  hosts: "{{ target_hosts }}"  # Make sure to define this when running the playbook or replace it with a specific group
   become: yes
   vars:
     mac_address: "{{ mac_address }}"  
@@ -12,9 +12,10 @@
         state: absent
         regexp: "{{ mac_address }}"
       when: mac_address is defined
-      
-    - name: Restart NextDNS to apply changes if profile was added or updated
+      register: mac_line_removal  # Register the result to use in the next task
+
+    - name: Restart NextDNS to apply changes if MAC address line was removed
       ansible.builtin.service:
         name: nextdns
         state: restarted
-      when: profile_update.changed
+      when: mac_line_removal.changed  # Check if the previous task made any changes
