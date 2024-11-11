@@ -1,6 +1,6 @@
 ---
 - name: Delete MAC address from OPNsense configuration
-  hosts: {{ target_hosts }}
+  hosts: "{{ target_hosts }}"
   become: yes
   vars:
     mac_address: "{{ mac_address }}"  
