@@ -1,0 +1,27 @@
+---
+- name: Delete MAC address from OPNsense configuration
+  hosts: opnsense_router
+  become: yes
+  vars:
+    mac_address_to_remove: "00:11:22:33:44:55"  # Replace with the MAC address you want to delete
+    config_file_path: "/conf/config.xml"  # Replace with the path to your OPNsense configuration file
+
+  tasks:
+    - name: Ensure the specified MAC address line is removed
+      lineinfile:
+        path: "{{ config_file_path }}"
+        state: absent
+        regexp: "{{ mac_address_to_remove }}"
+      when: mac_address_to_remove is defined
+
+    - name: Reload OPNsense configuration
+      shell: "/usr/local/etc/rc.reload_all"
+      args:
+        warn: false
+      notify: Restart OPNsense
+
+  handlers:
+    - name: Restart OPNsense
+      service:
+        name: configd
+        state: restarted
