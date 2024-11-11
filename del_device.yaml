@@ -1,10 +1,9 @@
 ---
 - name: Delete MAC address from OPNsense configuration
-  hosts: opnsense_router
+  hosts: {{ target_hosts }}
   become: yes
   vars:
-    mac_address: "{{ mac_address }}"  # Replace with the desired MAC address or pass as an extra var
-    device_name: "{{ device_name }}" 
+    mac_address: "{{ mac_address }}"  
 
   tasks:
     - name: Ensure the specified MAC address line is removed
