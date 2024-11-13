@@ -1,5 +1,6 @@
 - name: Parse nextdns.conf for MAC address profile mappings
   hosts: "{{ target_hosts }}"
+  gather_facts: no
   become: yes
   tasks:
     - name: Read nextdns.conf file
