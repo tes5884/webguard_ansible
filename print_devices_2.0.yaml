@@ -18,7 +18,7 @@
 
     - name: Parse devices and profiles
       set_fact:
-        devices: "{{ nextdns_content | regex_findall('\\/\\/device\\s+([a-fA-F0-9:]+)\\s+(.+?)\\",\\s+profile\\s+\\1=([a-zA-Z0-9]+)', '\\1', '\\2', '\\3') | map('list', ['device_mac_address', 'device_name', 'device_assigned_profile']) }}"
+        devices: "{{ nextdns_content | regex_findall('//device\\s+([a-fA-F0-9:]+)\\s+(.+?)\\",\\s+profile\\s+\\1=([a-zA-Z0-9]+)', '\\1', '\\2', '\\3') | map('list', ['device_mac_address', 'device_name', 'device_assigned_profile']) }}"
 
     - name: Assemble output in JSON
       set_fact:
