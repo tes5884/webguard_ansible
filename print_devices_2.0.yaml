@@ -1,6 +1,6 @@
 ---
 - name: Parse NextDNS config
-  hosts: localhost
+  hosts: "{{ target_devices }}"
   gather_facts: no
   tasks:
     - name: Read the NextDNS config file
