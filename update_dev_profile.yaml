@@ -23,7 +23,7 @@
       
     - name: Debug converted MAC address
       debug:
-        msg: "MAC address after conversion: {{ mac_address }}"
+        msg: "MAC address after conversion: {{ mac_conversion }}"
     
     - name: Validate the final MAC address format
       fail:
