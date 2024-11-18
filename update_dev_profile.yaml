@@ -7,9 +7,9 @@
     device_name: "{{ device_name }}"   # Familiar name to identify the device
 
   tasks:
-      - name: Debug converted MAC address
-        debug:
-          msg: "MAC address before conversion: {{ mac_address }}"
+    - name: Debug converted MAC address
+      debug:
+        msg: "MAC address before conversion: {{ mac_address }}"
           
     - name: Convert MAC address using sed if in hyphenated format
       shell: "echo '{{ mac_address }}' | sed 's/-/:/g'"
