@@ -7,11 +7,16 @@
     device_name: "{{ device_name }}"   # Familiar name to identify the device
 
   tasks:
-    - name: Convert MAC address if in hyphenated format
-      set_fact:
-        mac_address: "{{ mac_address | replace('-', ':') }}"
+    - name: Convert MAC address using sed if in hyphenated format
+      shell: "echo '{{ mac_address }}' | sed 's/-/:/g'"
+      register: mac_conversion
       when: mac_address is match('^[0-9a-fA-F]{2}(-[0-9a-fA-F]{2}){5}$')
-    
+
+    - name: Set converted MAC address
+      set_fact:
+        mac_address: "{{ mac_conversion.stdout }}"
+      when: mac_conversion is defined
+      
     - name: Debug converted MAC address
       debug:
         msg: "MAC address after conversion: {{ mac_address }}"
