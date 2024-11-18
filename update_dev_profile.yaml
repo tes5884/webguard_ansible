@@ -1,6 +1,7 @@
 - name: Update nextdns.conf with MAC address profile
   hosts: "{{ target_hosts }}"
   become: yes
+  gather_facts: no
   vars:
     mac_address: "{{ mac_address }}"  # Replace with the desired MAC address or pass as an extra var
     profile_id: "{{ profile_id }}"     # The profile to assign to the MAC address
@@ -17,7 +18,7 @@
 
     - name: Set converted MAC address
       set_fact:
-        mac_address: "{{ mac_conversion.stdout }}"
+        mac_address: "{{ mac_conversion }}"
       when: mac_conversion is defined
       
     - name: Debug converted MAC address
