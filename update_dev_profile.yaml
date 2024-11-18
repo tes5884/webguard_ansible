@@ -18,7 +18,7 @@
 
     - name: Set converted MAC address
       set_fact:
-        mac_address: "{{ mac_conversion }}"
+        mac_address: "{{ mac_conversion.stdout }}"
       when: mac_conversion is defined
       
     - name: Debug converted MAC address
