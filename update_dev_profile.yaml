@@ -11,6 +11,11 @@
     - name: Convert MAC address hyphens to colons using Jinja2
       set_fact:
         converted_mac_address: "{{ mac_address | regex_replace('-', ':') }}"
+
+    - name: debug converted mac address
+      debug:
+        msg: the current value for converted is "{{ converted_mac_address }}"
+        
     - name: Validate the final MAC address format
       fail:
         msg: "MAC address is not valid. Expected format is aa:bb:cc:dd:ee:ff."
