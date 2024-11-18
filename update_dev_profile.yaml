@@ -8,19 +8,9 @@
     device_name: "{{ device_name }}"   # Familiar name to identify the device
 
   tasks:
-    - name: Convert MAC address using sed
-      command: "echo {{ mac_address }} | sed 's/-/:/g'"
-      register: mac_conversion
-      ignore_errors: no  # Ensure it fails if any issue arises
-    
-    - name: Set converted MAC address
+    - name: Convert MAC address hyphens to colons using Jinja2
       set_fact:
-        mac_address: "{{ mac_conversion.stdout }}"
-    
-    - name: Debug converted MAC address
-      debug:
-        msg: "MAC address after conversion: {{ mac_address }}"
-    
+        converted_mac_address: "{{ mac_address | regex_replace('-', ':') }}"
     - name: Validate the final MAC address format
       fail:
         msg: "MAC address is not valid. Expected format is aa:bb:cc:dd:ee:ff."
