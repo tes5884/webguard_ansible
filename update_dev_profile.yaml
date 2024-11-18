@@ -7,19 +7,19 @@
     device_name: "{{ device_name }}"   # Familiar name to identify the device
 
   tasks:
-    - name: Convert MAC address if in hyphenated format
-      set_fact:
-        mac_address: "{{ mac_address | regex_replace('-', ':') }}"
-      when: mac_address is match('^[0-9a-fA-F]{2}(-[0-9a-fA-F]{2}){5}$')
+- name: Convert MAC address if in hyphenated format
+  set_fact:
+    mac_address: "{{ mac_address | regex_replace('-', ':') }}"
+  when: mac_address is match('^[0-9a-fA-F]{2}(-[0-9a-fA-F]{2}){5}$')
 
-    - name: Validate the final MAC address format
-      fail:
-        msg: "MAC address is not valid. Expected format is aa:bb:cc:dd:ee:ff."
-      when: not mac_address is match('^[0-9A-Fa-f]{2}(:[0-9A-Fa-f]{2}){5}$')
+- name: Debug converted MAC address
+  debug:
+    msg: "MAC address after conversion: {{ mac_address }}"
 
-    - name: Debug final MAC address
-      debug:
-        msg: "Validated and formatted MAC address: {{ mac_address }}"
+- name: Validate the final MAC address format
+  fail:
+    msg: "MAC address is not valid. Expected format is aa:bb:cc:dd:ee:ff."
+  when: not mac_address is match('^[0-9A-Fa-f]{2}(:[0-9A-Fa-f]{2}){5}$')
         
     - name: Validate profile_id format
       ansible.builtin.assert:
