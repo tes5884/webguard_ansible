@@ -10,7 +10,6 @@
     - name: Convert MAC address using sed if in hyphenated format
       shell: "echo '{{ mac_address }}' | sed 's/-/:/g'"
       register: mac_conversion
-      when: mac_address is match('^[0-9a-fA-F]{2}(-[0-9a-fA-F]{2}){5}$')
 
     - name: Set converted MAC address
       set_fact:
