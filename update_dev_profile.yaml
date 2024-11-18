@@ -9,7 +9,7 @@
   tasks:
     - name: Convert MAC address if in hyphenated format
       set_fact:
-        mac_address: "{{ mac_address | regex_replace('-', ':') }}"
+        mac_address: "{{ mac_address | regex_replace('([0-9a-fA-F]{2})-([0-9a-fA-F]{2})-([0-9a-fA-F]{2})-([0-9a-fA-F]{2})-([0-9a-fA-F]{2})-([0-9a-fA-F]{2})', '\\1:\\2:\\3:\\4:\\5:\\6') }}"
       when: mac_address is match('^[0-9a-fA-F]{2}(-[0-9a-fA-F]{2}){5}$')
     
     - name: Debug converted MAC address
