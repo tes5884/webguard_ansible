@@ -19,7 +19,7 @@
     - name: Validate the final MAC address format
       fail:
         msg: "MAC address is not valid. Expected format is aa:bb:cc:dd:ee:ff."
-      when: not mac_address is match('^[0-9A-Fa-f]{2}(:[0-9A-Fa-f]{2}){5}$')
+      when: not converted_mac_address is match('^[0-9A-Fa-f]{2}(:[0-9A-Fa-f]{2}){5}$')
         
     - name: Validate profile_id format
       ansible.builtin.assert:
