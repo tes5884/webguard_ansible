@@ -19,11 +19,10 @@
     - name: Set converted MAC address
       set_fact:
         mac_address: "{{ mac_conversion.stdout }}"
-      when: mac_conversion is defined
       
     - name: Debug converted MAC address
       debug:
-        msg: "MAC address after conversion: {{ mac_conversion }}"
+        msg: "MAC address after conversion: {{ mac_address }}"
     
     - name: Validate the final MAC address format
       fail:
