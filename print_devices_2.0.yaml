@@ -12,29 +12,40 @@
       set_fact:
         nextdns_content: "{{ nextdns_conf.content | b64decode }}"
 
-    - name: Parse default profile
-      set_fact:
-        default_profile: "{{ nextdns_content | regex_search('^profile\\s+([a-zA-Z0-9]+)', '\\1') }}"
-
     - name: Find device entries
-      set_fact:
-        device_entries: "{{ nextdns_content | regex_findall('//device\\s+([a-fA-F0-9:]+)\\s+(.+?)\\",\\s+profile\\s+([a-zA-Z0-9]+)') }}"
+      block:
+        - name: Extract device information
+          set_fact:
+            device_entries: "{{ 
+              nextdns_content | 
+              regex_findall('//device\\s+([a-fA-F0-9:]+)\\s+([^,]+),\\s+profile\\s+([a-zA-Z0-9]+)') 
+            }}"
 
     - name: Create devices list
       set_fact:
         devices: >-
           {{ 
             device_entries | 
+            map('list') | 
             map('dict', ['mac_address', 'device_name', 'profile']) | 
             list 
-          }}"
+          }}
 
-    - name: Assemble output in JSON
+    - name: Parse default profile
+      set_fact:
+        default_profile: "{{ 
+          nextdns_content | 
+          regex_search('^profile\\s+([a-zA-Z0-9]+)', '\\1') | 
+          first | 
+          default('') 
+        }}"
+
+    - name: Assemble output
       set_fact:
         parsed_data:
-          default_profile: "{{ default_profile[0] | default('') }}"
-          devices: "{{ devices | default([]) }}"
+          default_profile: "{{ default_profile }}"
+          devices: "{{ devices }}"
 
-    - name: Print parsed data as JSON
+    - name: Print parsed data
       debug:
         var: parsed_data
