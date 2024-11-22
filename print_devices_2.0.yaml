@@ -24,8 +24,8 @@
       set_fact:
         parsed_data:
           default_profile: "{{ default_profile }}"
-          devices: "{{ devices | map('combine', {'mac': 0, 'name': 1, 'profile': 2}) | list }}"
-
+          devices: "{{ devices | map('zip', ['mac', 'name', 'profile']) | map('dict') | list }}"
+      
     - name: Print parsed data as JSON
       debug:
         var: parsed_data | to_nice_json
