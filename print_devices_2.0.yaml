@@ -34,10 +34,10 @@
     - name: Parse default profile
       set_fact:
         default_profile: "{{ 
-          nextdns_content | 
-          regex_search('^profile\\s+([a-zA-Z0-9]+)', '\\1') | 
-          first | 
-          default('') 
+          (nextdns_content | 
+          regex_search('^profile\\s+([a-zA-Z0-9]+)', '\\1')) | 
+          default(['']) | 
+          first 
         }}"
 
     - name: Assemble output
