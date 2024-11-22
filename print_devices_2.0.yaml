@@ -18,13 +18,13 @@
 
     - name: Parse devices and profiles
       set_fact:
-        devices: "{{ nextdns_content | regex_findall('(?m)^//device\\s+(?P<mac>[a-fA-F0-9:]+)\\s+(?P<name>.+?),\\s+profile\\s+\\g<mac>=(?P<profile>[a-zA-Z0-9]+)') }}"
+        devices: "{{ nextdns_content | regex_findall('(?m)^//device\\s+([a-fA-F0-9:]+)\\s+(.+)\\nprofile\\s+\\1=([a-zA-Z0-9]+)') }}"
 
     - name: Assemble output in JSON
       set_fact:
         parsed_data:
           default_profile: "{{ default_profile }}"
-          devices: "{{ devices }}"
+          devices: "{{ devices | map('zip', ['mac', 'name', 'profile']) | map('dict') | list }}"
 
     - name: Print parsed data as JSON
       debug:
