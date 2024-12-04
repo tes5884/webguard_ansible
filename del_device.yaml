@@ -1,21 +1,51 @@
 ---
-- name: Delete MAC address from OPNsense configuration
-  hosts: "{{ target_hosts }}"  # Make sure to define this when running the playbook or replace it with a specific group
+- name: Delete MAC address from NextDNS configuration
+  hosts: "{{ target_hosts }}"  # Define this when running the playbook or replace it with a specific group
   become: yes
   vars:
     mac_address: "{{ mac_address }}"  
 
   tasks:
-    - name: Ensure the specified MAC address line is removed
-      lineinfile:
+    - name: Convert MAC address hyphens to colons (if needed)
+      set_fact:
+        converted_mac_address: "{{ mac_address | regex_replace('-', ':') }}"
+
+    - name: Check if /etc/config/nextdns file exists
+      ansible.builtin.stat:
+        path: "/etc/config/nextdns"
+      register: nextdns_config_stat
+
+    - name: Remove MAC address from /etc/config/nextdns if file exists
+      ansible.builtin.lineinfile:
+        path: "/etc/config/nextdns"
+        state: absent
+        regexp: "list config '{{ converted_mac_address }}=.*'"
+      when:
+        - nextdns_config_stat.stat.exists
+        - mac_address is defined
+      register: nextdns_line_removal
+
+    - name: Ensure the specified MAC address line is removed from /usr/local/etc/nextdns.conf
+      ansible.builtin.lineinfile:
         path: "/usr/local/etc/nextdns.conf"
         state: absent
-        regexp: "{{ mac_address }}"
-      when: mac_address is defined
-      register: mac_line_removal  # Register the result to use in the next task
+        regexp: "{{ converted_mac_address }}"
+      when:
+        - not nextdns_config_stat.stat.exists  # Only remove from this file if /etc/config/nextdns doesn't exist
+        - mac_address is defined
+      register: nextdns_conf_removal
 
-    - name: Restart NextDNS to apply changes if MAC address line was removed
-      ansible.builtin.service:
-        name: nextdns
-        state: restarted
-      when: mac_line_removal.changed  # Check if the previous task made any changes
+    - name: Restart NextDNS service
+      ansible.builtin.raw: "nextdns restart"
+      when: nextdns_line_removal.changed or nextdns_conf_removal.changed
+      register: nextdns_restart
+
+    - name: Check NextDNS status
+      ansible.builtin.raw: "nextdns status"
+      when: nextdns_restart.changed
+      register: nextdns_status
+
+    - name: Verify NextDNS is running
+      ansible.builtin.fail:
+        msg: "NextDNS is not running! Status: {{ nextdns_status.stdout }}"
+      when: "'running' not in nextdns_status.stdout.lower()"
