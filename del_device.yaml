@@ -17,7 +17,7 @@
 
     # OpenWRT-specific tasks
     - name: Remove MAC address from NextDNS configuration (OpenWRT)
-      ansible.builtin.raw: "sed -i '/list config {{ mac_address }}/d' /etc/config/nextdns"
+      ansible.builtin.raw: "sed -i '/list config \'{{ mac_address }}=.*/d' /etc/config/nextdns"
       when: os_type == 'openwrt'
       register: removal_result_openwrt
 
