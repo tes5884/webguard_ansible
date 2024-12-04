@@ -33,7 +33,7 @@
 
     - name: Debug NextDNS status output
       ansible.builtin.debug:
-      msg: "NextDNS Status Output: {{ status_result_openwrt.stdout }}"
+        msg: "NextDNS Status Output: {{ status_result_openwrt.stdout }}"
 
 
     - name: Verify NextDNS is running (OpenWRT)
