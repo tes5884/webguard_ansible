@@ -2,6 +2,7 @@
 - name: Delete MAC address from NextDNS configuration
   hosts: "{{ target_hosts }}"  # Define this when running the playbook or replace it with a specific group
   become: yes
+  gather_facts: no
   vars:
     mac_address: "{{ mac_address }}"  
 
