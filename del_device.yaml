@@ -8,13 +8,12 @@
 
   tasks:
     - name: Check if /etc/config/nextdns exists (OpenWRT check)
-      ansible.builtin.stat:
-        path: "/etc/config/nextdns"
-      register: nextdns_config_stat
+      ansible.builtin.raw: "test -f /etc/config/nextdns && echo 'exists' || echo 'not_found'"
+      register: nextdns_file_check
 
-    - name: Set OS type based on the presence of the NextDNS file
+    - name: Set OS type based on file presence
       set_fact:
-        os_type: "{{ 'openwrt' if nextdns_config_stat.stat.exists else 'opnsense' }}"
+        os_type: "{{ 'openwrt' if 'exists' in nextdns_file_check.stdout else 'opnsense' }}"
 
     # OpenWRT-specific tasks
     - name: Remove MAC address from NextDNS configuration (OpenWRT)
