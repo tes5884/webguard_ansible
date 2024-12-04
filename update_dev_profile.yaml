@@ -30,15 +30,16 @@
         cleaned_device_name: "{{ device_name | regex_replace('[^A-Za-z0-9 ]', '') }}"
 
     - name: Add device to NextDNS configuration
-      ansible.builtin.command:
-        cmd: "nextdns config set -config {{ converted_mac_address }}={{ profile_id }}"
+      ansible.builtin.raw: "nextdns config set -config {{ converted_mac_address }}={{ profile_id }}"
       register: add_device_result
-      changed_when: "'updated' in add_device_result.stdout or 'added' in add_device_result.stdout"
-      failed_when: add_device_result.rc != 0
+
+    - name: Check if device was added or updated
+      ansible.builtin.debug:
+        msg: "{{ add_device_result.stdout }}"
+      when: "'updated' in add_device_result.stdout or 'added' in add_device_result.stdout"
 
     - name: Restart NextDNS to apply changes
-      ansible.builtin.command:
-        cmd: "nextdns restart"
+      ansible.builtin.raw: "nextdns restart"
       when: add_device_result.changed
 
     - name: Summary of actions
