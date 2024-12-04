@@ -34,7 +34,7 @@
     - name: Verify NextDNS is running (OpenWRT)
       ansible.builtin.fail:
         msg: "NextDNS is not running on OpenWRT! Status: {{ status_result_openwrt.stdout }}"
-      when: os_type == 'openwrt' and "'running' not in status_result_openwrt.stdout.lower()"
+      when: os_type == 'openwrt' and "'running' not in status_result_openwrt.stdout"
 
     # OPNsense-specific tasks
     - name: Remove MAC address from NextDNS configuration (OPNsense)
