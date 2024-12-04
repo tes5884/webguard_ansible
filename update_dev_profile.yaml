@@ -1,11 +1,11 @@
-- name: Update nextdns.conf with MAC address profile
+- name: Update NextDNS with MAC address profile
   hosts: "{{ target_hosts }}"
   become: yes
   gather_facts: no
   vars:
     mac_address: "{{ mac_address }}"  # Replace with the desired MAC address or pass as an extra var
-    profile_id: "{{ profile_id }}"     # The profile to assign to the MAC address
-    device_name: "{{ device_name }}"   # Familiar name to identify the device
+    profile_id: "{{ profile_id }}"    # The profile to assign to the MAC address
+    device_name: "{{ device_name }}"  # Familiar name to identify the device
 
   tasks:
     - name: Convert MAC address hyphens to colons using Jinja2
@@ -29,48 +29,21 @@
       set_fact:
         cleaned_device_name: "{{ device_name | regex_replace('[^A-Za-z0-9 ]', '') }}"
 
-    - name: Check if MAC address profile exists in nextdns.conf
-      ansible.builtin.command: "grep '^profile {{ converted_mac_address }}={{ profile_id }}' /usr/local/etc/nextdns.conf"
-      register: profile_check
-      failed_when: profile_check.rc > 1  # Only fail if rc > 1 (indicates an actual error)
-      changed_when: no  # Prevents this check from marking the task as changed
+    - name: Add device to NextDNS configuration
+      ansible.builtin.command:
+        cmd: "nextdns config set -config {{ converted_mac_address }}={{ profile_id }}"
+      register: add_device_result
+      changed_when: "'updated' in add_device_result.stdout or 'added' in add_device_result.stdout"
+      failed_when: add_device_result.rc != 0
 
-    - name: Set fact if profile already exists
-      ansible.builtin.set_fact:
-        profile_status: "Profile for MAC address {{ converted_mac_address }} already exists with profile ID {{ profile_id }}."
-      when: profile_check.rc == 0
-      
-    - name: Add device name comment above the profile assignment
-      ansible.builtin.lineinfile:
-        path: /usr/local/etc/nextdns.conf
-        regexp: '^//device {{ converted_mac_address }}'
-        line: "//device {{ converted_mac_address }} {{ cleaned_device_name }}"
-        state: present
-        insertafter: "^profile {{ converted_mac_address }}="
-        
-    - name: Update or add the MAC address profile in nextdns.conf
-      ansible.builtin.lineinfile:
-        path: /usr/local/etc/nextdns.conf
-        regexp: '^profile {{ converted_mac_address }}='
-        line: "profile {{ converted_mac_address }}={{ profile_id }}"
-        state: present
-        create: yes
-      register: profile_update
-      when: profile_check.rc != 0
-
-    - name: Set fact if profile was added or updated
-      ansible.builtin.set_fact:
-        profile_status: >-
-          Profile for MAC address {{ converted_mac_address }} was {{ 'added' if profile_update.changed else 'updated' }} 
-          with profile ID {{ profile_id }} and device name {{ cleaned_device_name }}.
-      when: profile_check.rc != 0
-
-    - name: Restart NextDNS to apply changes if profile was added or updated
-      ansible.builtin.service:
-        name: nextdns
-        state: restarted
-      when: profile_update.changed
+    - name: Restart NextDNS to apply changes
+      ansible.builtin.command:
+        cmd: "nextdns restart"
+      when: add_device_result.changed
 
     - name: Summary of actions
       ansible.builtin.debug:
-        msg: "{{ profile_status }}"
+        msg: >-
+          Device {{ cleaned_device_name }} with MAC address {{ converted_mac_address }}
+          was successfully {{ 'added/updated' if add_device_result.changed else 'verified' }}
+          under profile ID {{ profile_id }}.
