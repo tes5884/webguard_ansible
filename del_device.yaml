@@ -1,52 +1,64 @@
 ---
-- name: Delete MAC address from NextDNS configuration
-  hosts: "{{ target_hosts }}"  # Define this when running the playbook or replace it with a specific group
+- name: Remove NextDNS Clients
+  hosts: "{{ target_hosts }}"
   become: yes
-  gather_facts: no
+  gather_facts: no  # Skip fact gathering to avoid Python dependency
   vars:
-    mac_address: "{{ mac_address }}"  
+    mac_address: "{{ mac_address }}"
 
   tasks:
-    - name: Convert MAC address hyphens to colons (if needed)
-      set_fact:
-        converted_mac_address: "{{ mac_address | regex_replace('-', ':') }}"
-
-    - name: Check if /etc/config/nextdns file exists
+    - name: Check if /etc/config/nextdns exists (OpenWRT check)
       ansible.builtin.stat:
         path: "/etc/config/nextdns"
       register: nextdns_config_stat
 
-    - name: Remove MAC address from /etc/config/nextdns if file exists
-      ansible.builtin.lineinfile:
-        path: "/etc/config/nextdns"
-        state: absent
-        regexp: "list config '{{ converted_mac_address }}=.*'"
-      when:
-        - nextdns_config_stat.stat.exists
-        - mac_address is defined
-      register: nextdns_line_removal
+    - name: Set OS type based on the presence of the NextDNS file
+      set_fact:
+        os_type: "{{ 'openwrt' if nextdns_config_stat.stat.exists else 'opnsense' }}"
 
-    - name: Ensure the specified MAC address line is removed from /usr/local/etc/nextdns.conf
+    # OpenWRT-specific tasks
+    - name: Remove MAC address from NextDNS configuration (OpenWRT)
+      ansible.builtin.raw: "sed -i '/list config {{ mac_address }}/d' /etc/config/nextdns"
+      when: os_type == 'openwrt'
+      register: removal_result_openwrt
+
+    - name: Restart NextDNS service (OpenWRT)
+      ansible.builtin.raw: "nextdns restart"
+      when: os_type == 'openwrt' and removal_result_openwrt.changed
+      register: restart_result_openwrt
+
+    - name: Check NextDNS status (OpenWRT)
+      ansible.builtin.raw: "nextdns status"
+      when: os_type == 'openwrt' and restart_result_openwrt.changed
+      register: status_result_openwrt
+
+    - name: Verify NextDNS is running (OpenWRT)
+      ansible.builtin.fail:
+        msg: "NextDNS is not running on OpenWRT! Status: {{ status_result_openwrt.stdout }}"
+      when: os_type == 'openwrt' and "'running' not in status_result_openwrt.stdout.lower()"
+
+    # OPNsense-specific tasks
+    - name: Remove MAC address from NextDNS configuration (OPNsense)
       ansible.builtin.lineinfile:
         path: "/usr/local/etc/nextdns.conf"
         state: absent
-        regexp: "{{ converted_mac_address }}"
-      when:
-        - not nextdns_config_stat.stat.exists  # Only remove from this file if /etc/config/nextdns doesn't exist
-        - mac_address is defined
-      register: nextdns_conf_removal
+        regexp: "{{ mac_address }}"
+      when: os_type == 'opnsense'
+      register: removal_result_opnsense
 
-    - name: Restart NextDNS service
-      ansible.builtin.raw: "nextdns restart"
-      when: nextdns_line_removal.changed or nextdns_conf_removal.changed
-      register: nextdns_restart
+    - name: Restart NextDNS service (OPNsense)
+      ansible.builtin.service:
+        name: nextdns
+        state: restarted
+      when: os_type == 'opnsense' and removal_result_opnsense.changed
 
-    - name: Check NextDNS status
-      ansible.builtin.raw: "nextdns status"
-      when: nextdns_restart.changed
-      register: nextdns_status
-
-    - name: Verify NextDNS is running
-      ansible.builtin.fail:
-        msg: "NextDNS is not running! Status: {{ nextdns_status.stdout }}"
-      when: "'running' not in nextdns_status.stdout.lower()"
+    # Summary of actions
+    - name: Summary of actions
+      ansible.builtin.debug:
+        msg: >-
+          OS Type: {{ os_type }}
+          - OpenWRT: 
+            Removal Result: {{ removal_result_openwrt.changed | default('N/A') }}
+            Restart Result: {{ restart_result_openwrt.changed | default('N/A') }}
+          - OPNsense:
+            Removal Result: {{ removal_result_opnsense.changed | default('N/A') }}
