@@ -31,6 +31,11 @@
       when: os_type == 'openwrt' and restart_result_openwrt.changed
       register: status_result_openwrt
 
+    - name: Debug NextDNS status output
+      ansible.builtin.debug:
+      msg: "NextDNS Status Output: {{ status_result_openwrt.stdout }}"
+
+
     - name: Verify NextDNS is running (OpenWRT)
       ansible.builtin.fail:
         msg: "NextDNS is not running on OpenWRT! Status: {{ status_result_openwrt.stdout }}"
