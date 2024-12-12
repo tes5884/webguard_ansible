@@ -1,0 +1,24 @@
+- name: Update NextDNS with MAC address profile
+  hosts: "{{ target_hosts }}"
+  become: yes
+  gather_facts: no
+  vars:
+    profile_id: "{{ profile_id }}"    # The profile to assign to the MAC address
+    device_name: "{{ device_name }}"  # Familiar name to identify the device
+
+  tasks:
+    - name: Validate profile_id format
+      ansible.builtin.assert:
+        that:
+          - profile_id is defined
+          - profile_id is match('^[A-Za-z0-9]+$')
+        fail_msg: "profile_id '{{ profile_id }}' is invalid. It must contain only letters and numbers, with no spaces or special characters."
+        success_msg: "profile_id '{{ profile_id }}' is valid."
+
+    - name: Add config to NextDNS configuration
+      ansible.builtin.raw: "nextdns config set -config {{ profile_id }}"
+      register: modify_config_result
+
+    - name: Restart NextDNS to apply changes
+      ansible.builtin.raw: "nextdns restart"
+      when: modify_config_result.changed
