@@ -4,6 +4,8 @@ all:
   children:
     prod:
       hosts:
+        59bc9b:
+          ansible_host: 59bc9b.taild9edc3.ts.net
         0849db:
           ansible_host: 0849db.taild9edc3.ts.net
         gl-mt6000:
