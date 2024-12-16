@@ -1,6 +1,6 @@
 all:
   vars:
-    ansible_user: webguardpro
+    ansible_user: root
   children:
     prod:
       hosts:
@@ -8,12 +8,11 @@ all:
           ansible_host: opnsense-new-device.taild9edc3.ts.net
         gl-mt6000:
           ansible_host: gl-mt6000.taild9edc3.ts.net
-          ansible_user: root
     dev:
       hosts:
-        opnsense-office:
-          ansible_host: opnsense-office.taild9edc3.ts.net
         opnsense-yanky:
           ansible_host: opnsense-yanky.taild9edc3.ts.net
+          ansible_user: webguardpro
         opnsense-16-lancaster:
           ansible_host: opnsense-16-lancaster.taild9edc3.ts.net
+          ansible_user: webguardpro
