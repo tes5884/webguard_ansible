@@ -4,6 +4,8 @@ all:
   children:
     prod:
       hosts:
+        0849db:
+          ansible_host: 0849db.taild9edc3.ts.net
         glx123:
           ansible_host: glx123.taild9edc3.ts.net
         opnsense-new-device:
