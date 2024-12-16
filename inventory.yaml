@@ -14,8 +14,6 @@ all:
           ansible_host: 59bc9b.taild9edc3.ts.net
         0849db:
           ansible_host: 0849db.taild9edc3.ts.net
-        gl-mt6000:
-          ansible_host: gl-mt6000.taild9edc3.ts.net
     dev:
       hosts:
         opnsense-yanky:
