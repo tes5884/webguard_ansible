@@ -4,6 +4,8 @@ all:
   children:
     prod:
       hosts:
+        59b937:
+          ansible_host: 59b937.taild9edc3.ts.net
         59b947:
           ansible_host: 59b947.taild9edc3.ts.net
         59bc9b:
