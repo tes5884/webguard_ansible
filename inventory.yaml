@@ -4,6 +4,8 @@ all:
   children:
     prod:
       hosts:
+        Router:90c0d0:
+          ansible_host: Router:90c0d0.taild9edc3.ts.net
         90c090:
           ansible_host: 90c090.taild9edc3.ts.net
         28d4a2:
