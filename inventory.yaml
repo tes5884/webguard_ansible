@@ -4,6 +4,8 @@ all:
   children:
     prod:
       hosts:
+        Not Blocked:
+          ansible_host: Not Blocked.taild9edc3.ts.net
         90c0f4:
           ansible_host: 90c0f4.taild9edc3.ts.net
         90c0d0:
