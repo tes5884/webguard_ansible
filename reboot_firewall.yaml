@@ -1,6 +1,6 @@
 - name: Reboot firewall
   hosts: "{{ target_hosts }}"
-  become: yes
+  become: no
   gather_facts: no
   tasks:
     - name: Reboot firewall
