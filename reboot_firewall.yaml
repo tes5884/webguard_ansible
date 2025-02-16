@@ -19,3 +19,4 @@
       ignore_errors: yes
       changed_when: true
       check_mode: no
+      when: fw_check.stdout_lines[0] == "openwrt"
