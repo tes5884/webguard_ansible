@@ -4,11 +4,11 @@
   gather_facts: no
   tasks:
     - name: Reboot firewall
-      ansible.builtin.shell: "/sbin/reboot"
+      ansible.builtin.shell: "shutdown -r now"
       async: 1
       poll: 0
       ignore_errors: yes
-      changed_when: true  # Ensure Ansible marks this as changed
+      changed_when: true
       check_mode: no
 
     - name: Wait for firewall to come back online
