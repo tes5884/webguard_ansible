@@ -18,6 +18,7 @@
     - name: Show detected firewall
       ansible.builtin.debug:
         msg: "Detected firewall type: {{ firewall_type }}"
+        msg: "stdout: {{ system_check.stdout }}"
         
     - name: Wait for reboot
       ansible.builtin.wait_for_connection:
