@@ -14,7 +14,5 @@
 
     - name: Reboot GLiNet/OpenWRT
       ansible.builtin.raw: "reboot"
-      async: 1
-      poll: 0
       ignore_errors: yes
       when: fw_check.stdout_lines[0] == "openwrt"
