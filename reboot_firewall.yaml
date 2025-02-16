@@ -13,5 +13,5 @@
       when: fw_check.stdout_lines[0] == "opnsense"
 
     - name: Reboot GLiNet/OpenWRT
-      raw: sync && /sbin/reboot -f
+      raw: /etc/init.d/system reload
       when: fw_check.stdout_lines[0] == "openwrt"
