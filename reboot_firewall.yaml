@@ -4,17 +4,11 @@
   gather_facts: no
   tasks:
     - name: Reboot firewall
-      ansible.builtin.shell: "shutdown -r now"
+      ansible.builtin.command: reboot
       async: 1
       poll: 0
-      ignore_errors: yes
-      changed_when: true
-      check_mode: no
 
-    - name: Wait for firewall to come back online
-      ansible.builtin.wait_for:
-        host: "{{ inventory_hostname }}"
-        port: 22
-        delay: 10
+    - name: Wait for firewalls to come back
+      ansible.builtin.wait_for_connection:
+        delay: 30
         timeout: 300
-      delegate_to: localhost
