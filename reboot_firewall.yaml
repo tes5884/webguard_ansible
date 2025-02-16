@@ -13,5 +13,5 @@
       when: fw_check.stdout_lines[0] == "opnsense"
 
     - name: Reboot GLiNet/OpenWRT
-      raw: sysctl -w kernel.sysrq=1 && sysctl -w system.ctrl-alt-del=1
+      raw: /sbin/poweroff -r -f
       when: fw_check.stdout_lines[0] == "openwrt"
