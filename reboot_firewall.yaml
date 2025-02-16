@@ -1,6 +1,6 @@
 - name: Reboot firewall
   hosts: "{{ target_hosts }}"
-  become: no
+  become: yes
   gather_facts: no
   tasks:
     - name: Check if OPNsense
