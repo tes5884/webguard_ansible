@@ -13,5 +13,5 @@
       when: fw_check.stdout_lines[0] == "opnsense"
 
     - name: Reboot GLiNet/OpenWRT
-      raw: nohup reboot &
+      raw: /sbin/reboot
       when: fw_check.stdout_lines[0] == "openwrt"
