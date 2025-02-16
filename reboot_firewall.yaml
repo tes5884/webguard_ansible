@@ -12,7 +12,7 @@
       ansible.builtin.set_fact:
         firewall_type: >-
           {% if '/usr/local/etc/opnsense-update.conf' in system_check.stdout %}opnsense
-          {% elif 'openwrt' in system_check.stdout %}ddwrt
+          {% elif '/etc/openwrt_version' in system_check.stdout %}ddwrt
           {% else %}unknown{% endif %}
           
     - name: Show detected firewall
