@@ -6,10 +6,6 @@ all:
       hosts:
         59bc9b:
           ansible_host: 59bc9b.taild9edc3.ts.net
-        Cust:108-NotBlocked:
-          ansible_host: Cust:108-NotBlocked.taild9edc3.ts.net
-        Not Blocked:
-          ansible_host: Not Blocked.taild9edc3.ts.net
         90c0f4:
           ansible_host: 90c0f4.taild9edc3.ts.net
         90c0d0:
