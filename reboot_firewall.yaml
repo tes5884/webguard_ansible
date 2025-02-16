@@ -10,4 +10,4 @@
 
     - name: Show detected firewall
       ansible.builtin.debug:
-        msg: "fw_check.stdout_lines[0]"
+        msg: "{{ fw_check.stdout_lines[0] }}"
