@@ -4,6 +4,8 @@ all:
   children:
     prod:
       hosts:
+        Router-59bc9b:
+          ansible_host: Router-59bc9b.taild9edc3.ts.net
         Cust:108-NotBlocked:
           ansible_host: Cust:108-NotBlocked.taild9edc3.ts.net
         Not Blocked:
