@@ -18,8 +18,6 @@ all:
           ansible_host: 59b937.taild9edc3.ts.net
         59b947:
           ansible_host: 59b947.taild9edc3.ts.net
-        59bc9b:
-          ansible_host: 59bc9b.taild9edc3.ts.net
         0849db:
           ansible_host: 0849db.taild9edc3.ts.net
           ansible_user: webguardpro
