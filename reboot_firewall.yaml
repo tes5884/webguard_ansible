@@ -8,6 +8,14 @@
       register: fw_check
       ignore_errors: yes
 
-    - name: Show detected firewall
-      ansible.builtin.debug:
-        msg: "{{ fw_check.stdout_lines[0] }}"
+    - name: Reboot OPNsense
+      raw: configctl system reboot
+      when: fw_check.stdout_lines[0] == "opnsense"
+      async: 1
+      poll: 0
+
+    - name: Reboot GLiNet/OpenWRT
+      raw: reboot
+      when: fw_check.stdout_lines[0] == "openwrt"
+      async: 1
+      poll: 0
