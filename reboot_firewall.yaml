@@ -3,24 +3,24 @@
   become: no
   gather_facts: no
   tasks:
-    - name: Get system info
-      raw: cat /etc/openwrt_version || cat /usr/local/etc/opnsense-update.conf || echo "unknown"
-      register: system_check
+    - name: Check if OPNsense
+      ansible.builtin.stat:
+        path: /usr/local/etc/opnsense-update.conf
+      register: opnsense_check
       ignore_errors: yes
-      
+
+    - name: Check if GLiNet/OpenWRT
+      raw: test -f /etc/openwrt_version && echo "exists" || echo "not found"
+      register: openwrt_check
+      ignore_errors: yes
+
     - name: Set firewall type fact
       ansible.builtin.set_fact:
         firewall_type: >-
-          {% if '/usr/local/etc/opnsense-update.conf' in system_check.stdout %}opnsense
-          {% elif '/etc/openwrt_version' in system_check.stdout %}ddwrt
+          {% if opnsense_check.stat.exists %}opnsense
+          {% elif openwrt_check.stdout_lines[0] == "exists" %}openwrt
           {% else %}unknown{% endif %}
-          
+
     - name: Show detected firewall
       ansible.builtin.debug:
         msg: "Detected firewall type: {{ firewall_type }}"
-        
-    - name: Wait for reboot
-      ansible.builtin.wait_for_connection:
-        delay: 30
-        timeout: 300
-      when: firewall_type != "unknown"
