@@ -3,6 +3,11 @@
   become: no
   gather_facts: no
   tasks:
+    - name: Get system info
+      raw: cat /etc/openwrt_version || cat /usr/local/etc/opnsense-update.conf || echo "unknown"
+      register: system_check
+      ignore_errors: yes
+      
     - name: Set firewall type fact
       ansible.builtin.set_fact:
         firewall_type: >-
