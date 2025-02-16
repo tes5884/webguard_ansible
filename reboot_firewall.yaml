@@ -13,10 +13,8 @@
       when: fw_check.stdout_lines[0] == "opnsense"
 
     - name: Reboot GLiNet/OpenWRT
-      ansible.builtin.shell: "reboot"
+      ansible.builtin.raw: "reboot"
       async: 1
       poll: 0
       ignore_errors: yes
-      changed_when: true
-      check_mode: no
       when: fw_check.stdout_lines[0] == "openwrt"
