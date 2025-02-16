@@ -3,39 +3,17 @@
   become: no
   gather_facts: no
   tasks:
-    - name: Check for OPNsense
-      ansible.builtin.stat:
-        path: /usr/local/etc/opnsense-update.conf
-      register: opnsense_check
-
-    - name: Check for DD-WRT
-      ansible.builtin.stat:
-        path: /etc/openwrt_version
-      register: ddwrt_check
-
     - name: Set firewall type fact
       ansible.builtin.set_fact:
         firewall_type: >-
-          {% if opnsense_check.stat.exists %}opnsense
-          {% elif ddwrt_check.stat.exists %}ddwrt
+          {% if '/usr/local/etc/opnsense-update.conf' in system_check.stdout %}opnsense
+          {% elif 'openwrt' in system_check.stdout %}ddwrt
           {% else %}unknown{% endif %}
-
+          
     - name: Show detected firewall
       ansible.builtin.debug:
         msg: "Detected firewall type: {{ firewall_type }}"
-
-    - name: Reboot OPNsense
-      ansible.builtin.shell: configctl system reboot
-      when: firewall_type == "opnsense"
-      async: 1
-      poll: 0
-
-    - name: Reboot DD-WRT
-      ansible.builtin.command: reboot
-      when: firewall_type == "ddwrt"
-      async: 1
-      poll: 0
-
+        
     - name: Wait for reboot
       ansible.builtin.wait_for_connection:
         delay: 30
