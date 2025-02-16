@@ -4,7 +4,7 @@
   gather_facts: no
   tasks:
     - name: Reboot firewall
-      ansible.builtin.shell: opnsense-shell reboot
+      ansible.builtin.shell: configctl system reboot
       async: 1
       poll: 0
 
