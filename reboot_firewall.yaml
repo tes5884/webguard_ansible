@@ -4,23 +4,10 @@
   gather_facts: no
   tasks:
     - name: Check if OPNsense
-      ansible.builtin.stat:
-        path: /usr/local/etc/opnsense-update.conf
-      register: opnsense_check
+      raw: test -f /usr/local/etc/opnsense-update.conf && echo "opnsense" || (test -f /etc/openwrt_version && echo "openwrt" || echo "unknown")
+      register: fw_check
       ignore_errors: yes
-
-    - name: Check if GLiNet/OpenWRT
-      raw: test -f /etc/openwrt_version && echo "exists" || echo "not found"
-      register: openwrt_check
-      ignore_errors: yes
-
-    - name: Set firewall type fact
-      ansible.builtin.set_fact:
-        firewall_type: >-
-          {% if opnsense_check.stat.exists %}opnsense
-          {% elif openwrt_check.stdout_lines[0] == "exists" %}openwrt
-          {% else %}unknown{% endif %}
 
     - name: Show detected firewall
       ansible.builtin.debug:
-        msg: "Detected firewall type: {{ firewall_type }}"
+        msg: "fw_check.stdout_lines[0]"
