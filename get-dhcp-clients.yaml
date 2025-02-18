@@ -1,0 +1,11 @@
+- name: Get dhcp client
+  hosts: all
+  gather_facts: no
+  tasks:
+    - name: Read file using raw
+      raw: "cat /tmp/dhcp.leases"
+      register: file_contents
+
+    - name: Show file contents
+      debug:
+        msg: "{{ file_contents.stdout }}"
