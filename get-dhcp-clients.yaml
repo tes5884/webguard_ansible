@@ -14,7 +14,7 @@
         fw_type: "{{ fw_check.stdout | default('unknown') }}"
 
     - name: Read DHCP lease file
-      shell: "cat {{ '/tmp/dhcp.leases' if fw_type == 'openwrt' else '/var/dhcpd/var/db/dhcpd.leases' if fw_type == 'opnsense' else '/dev/null' }}"
+      raw: "cat {{ '/tmp/dhcp.leases' if fw_type == 'openwrt' else '/var/dhcpd/var/db/dhcpd.leases' if fw_type == 'opnsense' else '/dev/null' }}"
       register: file_contents
       when: fw_type in ['openwrt', 'opnsense']
       changed_when: false
