@@ -2,10 +2,30 @@
   hosts: "{{ target_hosts }}"
   gather_facts: no
   tasks:
-    - name: Read file using raw
+    - name: Check if OPNsense
+      raw: test -f /usr/local/etc/opnsense-update.conf && echo "opnsense" || (test -f /etc/openwrt_version && echo "openwrt" || echo "unknown")
+      register: fw_check
+      ignore_errors: yes
+
+    - name: Reboot OPNsense
+      raw: configctl system reboot
+      when: fw_check.stdout_lines[0] == "opnsense"
+
+    - name: Reboot GLiNet/OpenWRT
+      ansible.builtin.raw: "sleep 2 && reboot"
+      ignore_errors: yes
+      when: fw_check.stdout_lines[0] == "openwrt"
+      
+    - name: Read file OpenWRT
       raw: "cat /tmp/dhcp.leases"
       register: file_contents
-
+      when: fw_check.stdout_lines[0] == "openwrt"
+      
+    - name: Read file OpnSense
+      raw: "cat /var/dhcpd/var/db/dhcpd.leases"
+      register: file_contents
+      when: fw_check.stdout_lines[0] == "opnsense"
+      
     - name: Show file contents
       debug:
         msg: "{{ file_contents.stdout }}"
