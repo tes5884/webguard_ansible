@@ -17,6 +17,9 @@
       register: file_contents
       when: fw_type in ['openwrt', 'opnsense']
 
+    - name: Print device type
+      debug: 
+        msg: "device_type: {{ fw_type }}"
     - name: Show file contents
       debug:
         msg: "{{ file_contents.stdout }}"
